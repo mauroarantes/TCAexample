@@ -6,19 +6,29 @@
 //
 
 import SwiftUI
+import ComposableArchitecture
 
 struct ContentView: View {
+    @Bindable var store: StoreOf<UserList>
+    
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            if store.isLoading {
+                ProgressView()
+            } else {
+                List(store.results) { user in
+                    Text(user.name)
+                }
+            }
         }
-        .padding()
+        .task {
+            await store.send(.fetchUsers).finish()
+        }
     }
 }
 
 #Preview {
-    ContentView()
+    ContentView(store: Store(initialState: UserList.State(), reducer: {
+        UserList()
+    }))
 }
